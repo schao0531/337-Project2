@@ -17,22 +17,38 @@ def autograder(url):
     grab_ingredients(url)
     #return results
 
-
 def get_raw_html(url):
-    x = get(url)
-    if x.status_code == 200:
-        return x.content
-    else:
-        return x.status_code
+    try:
+        raw_html = get(url,stream=True)
+        if raw_html.status_code == 200:
+            html = BeautifulSoup(raw_html.content, 'html.parser')
+            return html
+        else:
+            print(raw_html.status_code)
+            sys.exit()
+    except:
+        print("URL ", url, " not recognized!")
 
 def grab_ingredients(url):
     html = get_raw_html(url)
     items = []
     for line in html.select('label'):
+        #         print(line)
         line = str(line)
         if "{true: 'checkList__item'}" in line:
             segments = line.split('"')
             items.append(segments[3])
+    return items[:-1]
+
+def grab_steps(url):
+    html = get_raw_html(url)
+    items = []
+    for line in html.select('span'):
+        #         print(line)
+        line = str(line)
+        if "recipe-directions__list--item" in line:
+            segments = line.split('>')
+            items.append(segments[1].split('\n')[0])
     return items[:-1]
 
 def main():
