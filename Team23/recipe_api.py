@@ -7,6 +7,7 @@ global results
 from pprint import pprint
 import pdb
 
+resdict = {}
 #https://www.allrecipes.com/recipe/80827/easy-garlic-broiled-chicken/
 def autograder(url):
     '''Accepts the URL for a recipe, and returns a dictionary of the
@@ -18,8 +19,10 @@ def autograder(url):
 #    soup = BeautifulSoup(r, "html.parser")
 #    print(soup.prettify())
 
-    #grab_ingredients(url)
-    grab_steps(url)
+    ingredient_dict(grab_ingredients(url))
+    get_tools(url)
+    get_structuredsteps(url)
+    pprint(resdict)
     #return results
 
 def get_raw_html(url):
@@ -41,15 +44,14 @@ def get_raw_html(url):
 
 def grab_ingredients(url):
     html = get_raw_html(url)
-    soup = BeautifulSoup(html, "html.parser")
+    #pdb.set_trace()
+    #soup = BeautifulSoup(html, "html.parser")
     items = []
     for line in html.select('label'):
-        #         print(line)
         line = str(line)
         if "{true: 'checkList__item'}" in line:
             segments = line.split('"')
             items.append(segments[3])
-    print(items)
     return items[:-1]
 
 def ingredient_parser(string):
@@ -89,6 +91,7 @@ def ingredient_dict(string_list):
     ingredient_list = []
     for ingredient in string_list:
         ingredient_list.append(ingredient_parser(ingredient))
+    resdict["ingredients"] = ingredient_list
     return ingredient_list
 
 
@@ -103,12 +106,58 @@ def grab_steps(url):
         #         print(line)
         line = str(line)
         if "recipe-directions__list--item" in line:
+            #pdb.set_trace()
             segments = line.split('>')
             steps.append(segments[1].split('\n')[0])
-    get_tools(steps[:-1])
     return steps[:-1]
 
-def get_tools(steps):
+def get_structuredsteps(url):
+    steps = grab_steps(url)
+    joined = " ".join(steps)
+    structured_steps = joined.split(".")
+
+    resdict["structured steps"] = []
+
+    time_units = ['sec', 'sec.', 'seconds', 'second' 'min', 'min.', 'minutes', 'minute', 'hour', 'hours', 'hr', 'hrs', 'hr.', 'hrs.']
+
+    stop_words = ["and", "with", "the", "to"]
+
+    ingredient_names = [x["name"][0] for x in resdict["ingredients"]]
+    cooking_tools = [y for y in resdict["cooking tools"]]
+    cooking_tools.extend([z for z in resdict["implied cooking tools"]])
+    #some line for extracted methods
+    #print(ingredient_names)
+    #print(cooking_tools)
+
+    for s in structured_steps:
+        if s != "":
+            ingredient_list = []
+            for i in ingredient_names:
+                for y in i.split():
+                    if y not in stop_words and y in s:
+                        ingredient_list.append(i)
+
+            tools_list = [t for t in cooking_tools if t in s]
+
+            #some line for methods
+
+            cooking_time = ""
+            tokens = s.split(" ")
+            for x in range(len(tokens) - 2):
+                if tokens[x].isdigit() and tokens[x + 1] in time_units:
+                    cooking_time = tokens[x] + ' ' + tokens[x + 1]
+
+            step = {
+                "step": s,
+                "ingredients": list(set(ingredient_list)),
+                "tools": list(set(tools_list)),
+                "cooking time": cooking_time
+            }
+
+            resdict["structured steps"].append(step)
+
+def get_tools(url):
+    steps = grab_steps(url)
     cooking_tools = []
     implied_tools = []
     official_tools = {}
@@ -118,7 +167,6 @@ def get_tools(steps):
     for s in steps:
         line = s.lower().strip()
         line = re.sub(r'[^\w\s]','',line)
-        print(line)
         for t in official_tools:
             if t in line:
                 cooking_tools.append(t)
@@ -127,13 +175,13 @@ def get_tools(steps):
                     if w in line:
                         implied_tools.append(t)
 
-    print(list(set(cooking_tools)))
-    print(list(set(implied_tools)))
+    resdict["cooking tools"] = list(set(cooking_tools))
+    resdict["implied cooking tools"] = list(set(implied_tools))
     return list(set(cooking_tools)), list(set(implied_tools))
 
 def main():
     #url = str(input("What recipe would you like to read?: ")).strip()
-    url = "http://allrecipes.com/Recipe/Spaghetti-Carbonara-II/"
+    url = "https://www.allrecipes.com/recipe/80827/easy-garlic-broiled-chicken/"
     autograder(url)
 
 if __name__ == '__main__':
