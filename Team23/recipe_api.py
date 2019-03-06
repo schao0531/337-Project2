@@ -21,6 +21,7 @@ def autograder(url):
 
     ingredient_dict(grab_ingredients(url))
     get_tools(url)
+    get_methods(url)
     get_structuredsteps(url)
     pprint(resdict)
     #return results
@@ -179,9 +180,30 @@ def get_tools(url):
     resdict["implied cooking tools"] = list(set(implied_tools))
     return list(set(cooking_tools)), list(set(implied_tools))
 
+def get_methods(url):
+    steps = grab_steps(url)
+    cooking_methods = []
+    official_methods = {}
+    with open('methods.json') as f:
+        official_methods = json.load(f)
+
+    for s in steps:
+        line = s.lower().strip()
+        line = re.sub(r'[^\w\s]','',line)
+        for m in official_methods:
+            if m in line:
+                cooking_methods.append(m)
+            elif official_methods[m]:
+                for w in official_methods[m]:
+                    if w in line:
+                        cooking_methods.append(m)
+
+    resdict["cooking methods"] = list(set(cooking_methods))
+    return list(set(cooking_methods))
+
 def main():
     #url = str(input("What recipe would you like to read?: ")).strip()
-    url = "https://www.allrecipes.com/recipe/80827/easy-garlic-broiled-chicken/"
+    url = "http://allrecipes.com/recipe/easy-meatloaf/"
     autograder(url)
 
 if __name__ == '__main__':
