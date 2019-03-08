@@ -1,0 +1,22 @@
+lbs
+lb
+oz
+cup
+cups
+tablespoon
+tablespoons
+pounds
+tbsp
+teaspoon
+teaspoons
+tsp
+pinch
+jar
+can
+cans
+slices
+slice
+bag
+bags
+cubes
+to taste
