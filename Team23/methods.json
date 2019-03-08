@@ -4,16 +4,16 @@
 	"grease": ["greasing", "greased"],
 	"preheat": ["preheating", "preheated"],
 	"mix": ["mixing", "mixed"],
-	"melt": ["metling", "melted"],
+	"melt": ["melting", "melted"],
 	"arrange": ["arranged", "arranging"],
 	"microwave": ["microwaved", "microwaving"],
-	"bake": ["bakied", "baking"],
+	"bake": ["baked", "baking"],
 	"barbecue": ["bbq"],
 	"baste": ["basted", "basting"],
 	"blanch": ["blanched", "blanching"],
 	"boil": ["boiled", "boiling"],
 	"braise": ["braising", "braised"],
-	"brine": ["brining"],
+	"brine": ["brining", "brined"],
 	"brown": ["browning", "browned"],
 	"caramelize": ["caramelized", "caramelizing"],
 	"charbroile": ["charboiling", "charbroiled"],
@@ -64,6 +64,7 @@
 	"shuck": ["shucking", "shucked"],
 	"simmer": ["simmering", "simmered"],
 	"slow cook": ["slow cooker"],
+	"spooned":["spooning"],
 	"smoke": ["smoked", "smoking"],
 	"sous-vide": [],
 	"steam": ["steamed", "steaming"],
@@ -113,17 +114,3 @@
 	"squeeze": ["squeezed", "squeezing"],
 	"form": ["formed", "forming"]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
