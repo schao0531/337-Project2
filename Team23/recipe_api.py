@@ -297,6 +297,211 @@ def get_structuredsteps(url):
 # MAIN
 ####################################################################################################################################
 
+def main():
+#     url = "http://allrecipes.com/recipe/easy-meatloaf/"
+#     url = 'https://www.allrecipes.com/recipe/7453/chocolate-caramel-nut-cake/?internalSource=rotd&referringId=22935&referringContentType=Recipe%20Hub'
+#     url = 'https://thewoksoflife.com/2018/08/peach-daiquiris-frozen/'
+    url = str(input("What recipe would you like to read?: \n")).strip()
+    autograder(url)
+    
+if __name__ == '__main__':
+    main()
+
+
+# In[125]:
+
+
+'''Version 0.2'''
+from bs4 import BeautifulSoup
+from requests import get
+import re
+import json
+global results
+from pprint import pprint
+import pdb
+
+resdict = {}
+
+def autograder(url):
+    '''Accepts the URL for a recipe, and returns a dictionary of the
+    parsed results in the correct format. See project sheet for
+    details on correct format.'''
+    # your code here    
+    print('loading... \n')
+    get_ingredients(url)
+    get_tools(url)
+    get_methods(url)
+    get_structuredsteps(url)
+    return resdict
+
+def pretty_output(url):
+    '''Accepts the URL for a recipe, and returns a clear parsed and broken-down recipe with everything the autograder would have asked for.'''
+    # your code here
+    print('loading... \n')
+    get_ingredients(url)
+    get_tools(url)
+    get_methods(url)
+    get_structuredsteps(url)
+    
+    print(get_title(url)+' Recipe: \n')
+    
+    print('-------------------------------')
+    print('INGREDIENTS')
+    print('------------------------------- \n')
+    
+    for ingredient_dict in resdict['ingredients']:
+        print(ingredient_dict['full_string'])
+        print('Ingredient: ',', '.join(ingredient_dict['name']))
+        print('Quantity: ',', '.join(ingredient_dict['quantity']))
+        print('Measurement: ',', '.join(ingredient_dict['measurement']))
+        print('Descriptor: ',', '.join(ingredient_dict['descriptor']))
+        print('')
+
+    print('-------------------------------')
+    print('TOOLS')
+    print('------------------------------- \n')
+    print('Named: '+', '.join(resdict['cooking tools']))
+    print('Implied: '+', '.join(resdict['implied cooking tools']))
+    print('')
+
+    print('-------------------------------')
+    print('METHODS')
+    print('------------------------------- \n')
+    print(', '.join(resdict['cooking methods']))
+    print('')
+
+
+    print('-------------------------------')
+    print('INSTRUCTIONS')
+    print('------------------------------- \n')
+    for i in range(len(resdict['structured steps'])):
+        print('Step ',str(i+1),': ')
+        step_dict = resdict['structured steps'][i]
+        print(step_dict['step'])
+        print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
+        print('Relevant Tools: '+', '.join(step_dict['tools']))
+        print('Relevant Methods: '+', '.join(step_dict['methods']))
+        print('Cooking Time: '+', '.join(step_dict['cooking time']))
+        print('')
+
+    return
+
+
+##########################################################################################################
+# GENERAL STUFF
+##########################################################################################################
+
+def get_raw_html(url):
+    try:
+        raw_html = get(url,stream=True)
+        if raw_html.status_code == 200:
+            html = BeautifulSoup(raw_html.content, 'html.parser')
+            return html
+        else:
+            print(raw_html.status_code)
+            sys.exit()
+    except:
+        print("URL ", url, " not recognized!")
+
+def get_title(url):
+    url_list = url.split('/')
+    if len(url_list[-1])==0:
+        title = url_list[-2]
+    else:
+        title = url_list[-1]
+    title_list = title.split('-')
+    title = ' '.join(title_list)
+    return title.title()
+
+
+##########################################################################################################
+# INGREDIENT STUFF
+##########################################################################################################
+
+def ingredients_from_url(url):
+    html = get_raw_html(url)
+    #pdb.set_trace()
+    #soup = BeautifulSoup(html, "html.parser")
+    items = []
+    for line in html.select('label'):
+        line = str(line)
+        if "{true: 'checkList__item'}" in line:
+            segments = line.split('"')
+            items.append(segments[3])
+    return items[:-1]
+
+def ingredient_parser(string):
+    words = string.split(' ')        
+    
+    # Quantity
+    if words[0][0].isnumeric() and words[1][0].isnumeric():    
+        quantity = [' '.join(words[:2])]
+        words = words[2:]
+    elif words[0][0].isnumeric():
+        quantity = [words[0]]
+        words = words[1:]
+    else:
+        quantity = ['unspecified']
+
+    # Measurement
+    measurement_units = [line.split('\n')[0] for line in open('measurement_units.txt', 'r').readlines()]
+    if '(' in words[0]:
+        measurement = ' '.join(words[:3])
+        measurement = measurement.replace("(","").replace(")","")
+        measurement = [measurement]
+        words = words[3:]
+    else:
+        measurement = [word for word in words if word in measurement_units]                                  
+        if len(measurement)==0 and ('to taste' in ' '.join(words) or 'for flavor' in ' '.join(words) or 'as needed' in ' '.join(words)):
+            measurement=['to taste']
+            words = ' '.join(words).replace('to taste','').replace('for flavor','').replace('as needed','')
+            words = words.split(' ')
+        elif len(measurement)==0:
+            measurement=['unspecified']
+        words = [word for word in words if word not in measurement_units]
+
+    descriptor_terms = [line.split('\n')[0] for line in open('descriptor_terms.txt', 'r').readlines()]
+    descriptors = [word for word in words if word in descriptor_terms]
+    if len(descriptors)==0:
+        descriptors=['unspecified']
+    words = [word for word in words if word not in descriptor_terms]
+    
+    preparation = []
+    prep_description = []
+    Max = []
+    
+    if 'and' in words:
+        ingredient1 = words[:words.index('and')]
+        ingredient1 = ingredient1 if isinstance(ingredient1, str) else ' '.join(ingredient1)
+        ingredient2 = words[words.index('and')+1:]
+        ingredient2 = ingredient2 if isinstance(ingredient2, str) else ' '.join(ingredient2)
+        name = [ingredient1.replace(',',''),ingredient2.replace(',','')]
+    else:
+        name = [' '.join(words).replace(',','')]
+
+    return {"name":name,
+            "quantity":quantity,
+            "measurement":measurement,
+            "descriptor":descriptors,
+            "preparation":preparation,
+            "prep_description":prep_description,
+            "max":Max,
+            "full_string":string
+            }
+
+def get_ingredients(url):
+    ingredient_list = ingredients_from_url(url)
+    ingredient_data = []
+    for ingredient in ingredient_list:
+        ingredient_data.append(ingredient_parser(ingredient))
+    resdict["ingredients"] = ingredient_data
+    return ingredient_data
+
+
+##########################################################################################################
+# TOOL & METHOD STUFF
+##########################################################################################################
+
 def get_tools(url):
     steps = grab_steps(url)
     cooking_tools = []
@@ -535,10 +740,3 @@ def main():
     #
 if __name__ == '__main__':
     main()
-
-
-# In[ ]:
-
-
-
-
