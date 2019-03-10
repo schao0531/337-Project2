@@ -6,6 +6,10 @@ import json
 global results
 from pprint import pprint
 import pdb
+import nltk
+nltk.download('stopwords', quiet=True)
+from nltk.corpus import stopwords
+import copy
 
 resdict = {}
 
@@ -13,30 +17,25 @@ def autograder(url):
     '''Accepts the URL for a recipe, and returns a dictionary of the
     parsed results in the correct format. See project sheet for
     details on correct format.'''
-    # your code here    
-    print('loading... \n')
-    get_ingredients(url)
-    get_tools(url)
-    get_methods(url)
-    get_structuredsteps(url)
-    return resdict
-
-def pretty_output(url):
-    '''Accepts the URL for a recipe, and returns a clear parsed and broken-down recipe with everything the autograder would have asked for.'''
     # your code here
     print('loading... \n')
     get_ingredients(url)
     get_tools(url)
     get_methods(url)
     get_structuredsteps(url)
-    
-    print(get_title(url)+' Recipe: \n')
-    
+
+    return resdict
+
+def pretty_output(dct):
+    '''Used for pretty printing transformed recipes'''
+
+    print(dct["title"]+' Recipe: \n')
+
     print('-------------------------------')
     print('INGREDIENTS')
     print('------------------------------- \n')
-    
-    for ingredient_dict in resdict['ingredients']:
+
+    for ingredient_dict in dct['ingredients']:
         print(ingredient_dict['full_string'])
         print('Ingredient: ',', '.join(ingredient_dict['name']))
         print('Quantity: ',', '.join(ingredient_dict['quantity']))
@@ -47,23 +46,23 @@ def pretty_output(url):
     print('-------------------------------')
     print('TOOLS')
     print('------------------------------- \n')
-    print('Named: '+', '.join(resdict['cooking tools']))
-    print('Implied: '+', '.join(resdict['implied cooking tools']))
+    print('Named: '+', '.join(dct['cooking tools']))
+    print('Implied: '+', '.join(dct['implied cooking tools']))
     print('')
 
     print('-------------------------------')
     print('METHODS')
     print('------------------------------- \n')
-    print(', '.join(resdict['cooking methods']))
+    print(', '.join(dct['cooking methods']))
     print('')
 
 
     print('-------------------------------')
     print('INSTRUCTIONS')
     print('------------------------------- \n')
-    for i in range(len(resdict['structured steps'])):
+    for i in range(len(dct['structured steps'])):
         print('Step ',str(i+1),': ')
-        step_dict = resdict['structured steps'][i]
+        step_dict = dct['structured steps'][i]
         print(step_dict['step'])
         print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
         print('Relevant Tools: '+', '.join(step_dict['tools']))
@@ -98,6 +97,7 @@ def get_title(url):
         title = url_list[-1]
     title_list = title.split('-')
     title = ' '.join(title_list)
+    resdict["title"] = title
     return title.title()
 
 
@@ -118,10 +118,10 @@ def ingredients_from_url(url):
     return items[:-1]
 
 def ingredient_parser(string):
-    words = string.split(' ')        
-    
+    words = string.split(' ')
+
     # Quantity
-    if words[0][0].isnumeric() and words[1][0].isnumeric():    
+    if words[0][0].isnumeric() and words[1][0].isnumeric():
         quantity = [' '.join(words[:2])]
         words = words[2:]
     elif words[0][0].isnumeric():
@@ -138,7 +138,7 @@ def ingredient_parser(string):
         measurement = [measurement]
         words = words[3:]
     else:
-        measurement = [word for word in words if word in measurement_units]                                  
+        measurement = [word for word in words if word in measurement_units]
         if len(measurement)==0 and ('to taste' in ' '.join(words) or 'for flavor' in ' '.join(words) or 'as needed' in ' '.join(words)):
             measurement=['to taste']
             words = ' '.join(words).replace('to taste','').replace('for flavor','').replace('as needed','')
@@ -152,11 +152,11 @@ def ingredient_parser(string):
     if len(descriptors)==0:
         descriptors=['unspecified']
     words = [word for word in words if word not in descriptor_terms]
-    
+
     preparation = []
     prep_description = []
     Max = []
-    
+
     if 'and' in words:
         ingredient1 = words[:words.index('and')]
         ingredient1 = ingredient1 if isinstance(ingredient1, str) else ' '.join(ingredient1)
@@ -258,7 +258,7 @@ def get_structuredsteps(url):
 
     time_units = ['sec', 'sec.', 'seconds', 'second' 'min', 'min.', 'minutes', 'minute', 'hour', 'hours', 'hr', 'hrs', 'hr.', 'hrs.']
 
-    stop_words = ["and", "with", "the", "to", "or", "more", "as"]
+    stop_words = list(stopwords.words('english'))
 
     ingredient_dicts = [ingredient_dict for ingredient_dict in resdict["ingredients"]]
     ingredient_lists = [ingredient_dict['name'] for ingredient_dict in ingredient_dicts]
@@ -266,52 +266,56 @@ def get_structuredsteps(url):
     cooking_tools = [y for y in resdict["cooking tools"]]
     cooking_tools.extend([z for z in resdict["implied cooking tools"]])
     methods = {}
-    
+
+
     official_methods = {}
     with open('methods.json') as f:
         official_methods = json.load(f)
-    
+
     for m in resdict["cooking methods"]:
         methods[m] = official_methods[m]
 
     for s in structured_steps:
-        s = s.lstrip()
-        if s != "":
+        l_s = s.lower().strip()
+
+        if l_s != "":
+            #pdb.set_trace()
             ingredient_list = []
             for i in ingredient_names:
                 for y in i.split():
-                    if y not in stop_words and y in s:
-                        if "broth" in i and "broth" not in s:
+                    if y not in stop_words and y in l_s:
+                        if "broth" in i and "broth" not in l_s:
                             continue
-                    ingredient_list.append(i)
+                        #elif
+                        ingredient_list.append(i)
 
             if len(ingredient_list)==0:
                 ingredient_list = ['none']
 
-            tools_list = [t for t in cooking_tools if t in s]
+            tools_list = [t for t in cooking_tools if t in l_s]
             if len(tools_list)==0:
                 tools_list = ['unspecified']
 
             methods_list = []
             for m in methods.keys():
-                if m in s:
+                if m in l_s:
                     methods_list.append(m)
                 elif methods[m]:
                     for im in methods[m]:
-                        if im in s and im not in " ".join(tools_list):
+                        if im in l_s and im not in " ".join(tools_list):
                             #print(im)
                             methods_list.append(m)
             if len(methods_list)==0:
                 methods_list = ['unspecified']
 
             cooking_time = ""
-            tokens = s.split(" ")
+            tokens = l_s.split(" ")
             for x in range(len(tokens) - 1):
                 if tokens[x].isdigit() and tokens[x + 1] in time_units:
                     cooking_time = [tokens[x] + ' ' + tokens[x + 1]]
             if len(cooking_time)==0:
                 cooking_time = ['unspecified']
-                
+
             step = {
                 "step": s,
                 "ingredients": list(set(ingredient_list)),
@@ -334,25 +338,34 @@ def vegetarian(resdict, transform_type):
         official_veg_transform = json.load(f)
 
     substitutes = official_veg_transform["to veg"] if transform_type == "to veg" else official_veg_transform["from veg"]
+
+    new_title = transformed_rec['title']
+    for word in transformed_rec['title'].split():
+        lowered = word.lower()
+        if lowered in substitutes:
+            new_title = new_title.replace(word,substitutes[lowered][0].capitalize())
+    transformed_rec['title'] = new_title
+
     new_ingredients = transformed_rec["ingredients"]
     mapping = {}
 
     for i in new_ingredients:
-        #pdb.set_trace()
         orig = i["name"][0].lower().strip()
         orig = re.sub(r'[^\w\s]','',orig)
         for w in orig.split():
             if w in list(substitutes.keys()):
                 if "broth" in orig and w != "broth":
-                    #pdb.set_trace()
                     continue
                 else:
                     mapping[i["name"][0]] = substitutes[w][0]
-                    i["name"] = substitutes[w][0]
+                    i["name"] = []
+                    i["name"].append(substitutes[w][0])
 
-    #pprint(resdict['ingredients'])
-    #pprint(new_ingredients)
-    #pprint(mapping)
+        new_full_string = i['full_string']
+        for word in i["full_string"].split():
+            if word in substitutes:
+                new_full_string = new_full_string.replace(word,substitutes[word][0])
+        i["full_string"] = new_full_string
 
     new_steps = transformed_rec["structured steps"]
     for s in new_steps:
@@ -360,6 +373,12 @@ def vegetarian(resdict, transform_type):
             if m in s["ingredients"]:
                 new_ingredient_list = [x if x != m else mapping[m] for x in s["ingredients"]]
                 s["ingredients"] = new_ingredient_list
+
+        new_step = s["step"]
+        for word in s["step"].split():
+            if word in substitutes:
+                new_step = new_step.replace(word,substitutes[word][0])
+        s["step"] = new_step
 
     #pprint(resdict["structured steps"])
     #pprint(new_steps)
@@ -370,60 +389,109 @@ def vegetarian(resdict, transform_type):
 ##########################################################################################################
 
 def main():
-    #url = "http://allrecipes.com/recipe/easy-meatloaf/"
-    #url = 'https://thewoksoflife.com/2018/08/peach-daiquiris-frozen/'
-    #url = 'https://www.allrecipes.com/recipe/80827/easy-garlic-broiled-chicken/'
+    # url = "http://allrecipes.com/Recipe/Baked-Lemon-Chicken-with-Mushroom-Sauce/"
+    #
+    # #url = str(input("What recipe would you like to read?: \n")).strip()
+    # #autograder(url)
+    # get_title(url)
+    # get_ingredients(url)
+    # get_tools(url)
+    # get_methods(url)
+    # get_structuredsteps(url)
+    #
+    # #pprint(vegetarian(resdict, "from veg"))
+    # pretty_output(vegetarian(resdict, "to veg"))
 
-    url = str(input("What recipe would you like to read?: \n")).strip()
-    #autograder(url)
-    pretty_output(url)
-    
     #user loop
-    # outer_loop = 1
-    # while outer_loop == 1:
-    #     url = str(input("What recipe would you like to read?: ")).strip()
-    #     inner_loop = 1
-    #     autograder(url)
-    #     while inner_loop == 1:
-    #         print("What do you want to do?")
-    #         print ("\n1. Ingredients \n2. Cooking Tools\n3. Cooking Methods\n4. Steps\n5. Transform")
-    #         user_input = str(input("Choose an option: ")).strip()
-    #         if user_input == "1":
-    #             pprint(resdict["ingredients"])
-    #         elif user_input == "2":
-    #             pprint(resdict["cooking tools"])
-    #             pprint(resdict["implied cooking tools"])
-    #         elif user_input == "3":
-    #             pprint(resdict["cooking methods"])
-    #         elif user_input == "4":
-    #             pprint(resdict["structured steps"])
-    #         elif user_input == "5":
-    #             print("How do you want to transform the recipe?")
-    #             print("\n1. To vegeratian \n2. From vegetarian")
-    #             transform_type = str(input("Choose an option: ")).strip()
-    #             if transform_type == "1":
-    #                 pprint(vegetarian(resdict, "to veg"))
-    #             elif transform_type == "2":
-    #                 pprint(vegetarian(resdict, "from veg"))
-    #             else:
-    #                 print("Invalid transformation type.")
-    #         else:
-    #             print("Invalid input.")
-    #
-    #         cont = input("Continue with this current recipe? y/n: ")
-    #         if cont.lower() == 'y':
-    #                 continue
-    #         elif cont.lower() == 'n':
-    #             inner_loop = -1
-    #             break
-    #         else:
-    #             print("Invalid input.")
-    #     exit = input("Exit program? y/n: ")
-    #     if exit.lower() == "y":
-    #         outer_loop = -1
-    #         break
-    #     else:
-    #         continue
-    #
+    outer_loop = 1
+    while outer_loop == 1:
+        url = str(input("What recipe would you like to read?: ")).strip()
+        inner_loop = 1
+
+        print('loading... \n')
+        get_ingredients(url)
+        get_tools(url)
+        get_methods(url)
+        get_structuredsteps(url)
+        print(get_title(url)+' Recipe: \n')
+
+        while inner_loop == 1:
+            print("What do you want to do?")
+            print ("\n1. Ingredients \n2. Cooking Tools\n3. Cooking Methods\n4. Steps\n5. Transform")
+            user_input = str(input("Choose an option: ")).strip()
+            print("")
+            if user_input == "1":
+
+                print('-------------------------------')
+                print('INGREDIENTS')
+                print('------------------------------- \n')
+
+                for ingredient_dict in resdict['ingredients']:
+                    print(ingredient_dict['full_string'])
+                    print('Ingredient: ',', '.join(ingredient_dict['name']))
+                    print('Quantity: ',', '.join(ingredient_dict['quantity']))
+                    print('Measurement: ',', '.join(ingredient_dict['measurement']))
+                    print('Descriptor: ',', '.join(ingredient_dict['descriptor']))
+                    print('')
+
+            elif user_input == "2":
+                print('-------------------------------')
+                print('TOOLS')
+                print('------------------------------- \n')
+
+                print('Named: '+', '.join(resdict['cooking tools']))
+                print('Implied: '+', '.join(resdict['implied cooking tools']))
+                print('')
+            elif user_input == "3":
+
+                print('-------------------------------')
+                print('METHODS')
+                print('------------------------------- \n')
+                print(', '.join(resdict['cooking methods']))
+                print('')
+
+            elif user_input == "4":
+
+                print('-------------------------------')
+                print('INSTRUCTIONS')
+                print('------------------------------- \n')
+                for i in range(len(resdict['structured steps'])):
+                    print('Step ',str(i+1),': ')
+                    step_dict = resdict['structured steps'][i]
+                    print(step_dict['step'])
+                    print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
+                    print('Relevant Tools: '+', '.join(step_dict['tools']))
+                    print('Relevant Methods: '+', '.join(step_dict['methods']))
+                    print('Cooking Time: '+', '.join(step_dict['cooking time']))
+                    print('')
+
+            elif user_input == "5":
+                print("How do you want to transform the recipe?")
+                print("\n1. To vegeratian \n2. From vegetarian")
+                transform_type = str(input("Choose an option: ")).strip()
+                if transform_type == "1":
+                    pretty_output(vegetarian(resdict, "to veg"))
+                elif transform_type == "2":
+                    pretty_output(vegetarian(resdict, "from veg"))
+                else:
+                    print("Invalid transformation type.")
+            else:
+                print("Invalid input.")
+
+            cont = input("Continue with this current recipe? y/n: ")
+            if cont.lower() == 'y':
+                    continue
+            elif cont.lower() == 'n':
+                inner_loop = -1
+                break
+            else:
+                print("Invalid input.")
+        exit = input("Exit program? y/n: ")
+        if exit.lower() == "y":
+            outer_loop = -1
+            break
+        else:
+            continue
+
 if __name__ == '__main__':
     main()

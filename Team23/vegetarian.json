@@ -1,7 +1,8 @@
 {
   "to veg":{
     "beef":["tofu"],
-    "burger":["portebello mushrooms"],
+    "burger":["portebello mushroom"],
+    "burgers":["portebello mushrooms"],
     "steak":["portebello mushrooms"],
     "brisket":["portebello mushrooms"],
     "turkey":["tofurky"],
@@ -11,6 +12,7 @@
     "ham":["tofurky"],
     "lamb":["seitan"],
     "chicken":["tempeh"],
+    "chickens":["tempehs"],
     "duck":["tempeh"],
     "salmon":["tofu"],
     "tuna":["chickpeas"],
@@ -29,14 +31,17 @@
   "from veg":{
       "tofu":["chicken"],
       "eggplant":  ["chicken"],
+      "eggplants":  ["chicken"],
       "mushroom": ["burger"],
-      "zuchini" : ["shrimp"],
+      "mushrooms": ["burgers"],
+      "zucchini" : ["shrimp"],
+      "zucchinis" : ["shrimps"],
       "tempeh": ["chicken"],
       "seitan": ["chicken"],
       "bok choy": ["squid"],
       "chickpea": ["scallop"],
+      "chickpeas": ["scallops"],
       "squash": ["shrimp"],
-      "asparagus": ["shrimp"],
-      "portabello" : ["brisket"]
+      "asparagus": ["shrimp"]
   }
 }
