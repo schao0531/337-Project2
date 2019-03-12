@@ -1,0 +1,16 @@
+{"ingredients":
+	{"soy sauce":"ranch dressing",
+	"honey":"ranch dressing",
+	"aoli":"ranch dressing",
+	"green onion":"corn",
+	"ground ginger":"ranch dressing",
+	"shrimp":"fried chicken"},
+"tools":
+	{"grill":"deep fryer",
+	"oven":"deep fryer",
+	"pan":"deep fryer"},
+"methods":
+	{"steam":"fry",
+	"grill":"fry",
+	"bake":"fry"}
+}

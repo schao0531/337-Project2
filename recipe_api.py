@@ -1,4 +1,4 @@
-'''Version 0.3'''
+"""Version 0.3"""
 from bs4 import BeautifulSoup
 from requests import get
 import re
@@ -13,73 +13,14 @@ import copy
 
 resdict = {}
 
-def autograder(url):
-    '''Accepts the URL for a recipe, and returns a dictionary of the
-    parsed results in the correct format. See project sheet for
-    details on correct format.'''
-    # your code here
-    print('loading... \n')
-    get_ingredients(url)
-    get_tools(url)
-    get_methods(url)
-    get_structuredsteps(url)
-
-    return resdict
-
-def pretty_output(dct):
-    '''Used for pretty printing transformed recipes'''
-
-    print(dct["title"]+' Recipe: \n')
-
-    print('-------------------------------')
-    print('INGREDIENTS')
-    print('------------------------------- \n')
-
-    for ingredient_dict in dct['ingredients']:
-        print(ingredient_dict['full_string'])
-        print('Ingredient: ',', '.join(ingredient_dict['name']))
-        print('Quantity: ',', '.join(ingredient_dict['quantity']))
-        print('Measurement: ',', '.join(ingredient_dict['measurement']))
-        print('Descriptor: ',', '.join(ingredient_dict['descriptor']))
-        print('')
-
-    print('-------------------------------')
-    print('TOOLS')
-    print('------------------------------- \n')
-    print('Named: '+', '.join(dct['cooking tools']))
-    print('Implied: '+', '.join(dct['implied cooking tools']))
-    print('')
-
-    print('-------------------------------')
-    print('METHODS')
-    print('------------------------------- \n')
-    print(', '.join(dct['cooking methods']))
-    print('')
-
-
-    print('-------------------------------')
-    print('INSTRUCTIONS')
-    print('------------------------------- \n')
-    for i in range(len(dct['structured steps'])):
-        print('Step ',str(i+1),': ')
-        step_dict = dct['structured steps'][i]
-        print(step_dict['step'])
-        print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
-        print('Relevant Tools: '+', '.join(step_dict['tools']))
-        print('Relevant Methods: '+', '.join(step_dict['methods']))
-        print('Cooking Time: '+', '.join(step_dict['cooking time']))
-        print('')
-
-    return
-
 
 ##########################################################################################################
-# GENERAL STUFF
+# GENERAL
 ##########################################################################################################
 
 def get_raw_html(url):
     try:
-        raw_html = get(url,stream=True)
+        raw_html = get(url, stream=True)
         if raw_html.status_code == 200:
             html = BeautifulSoup(raw_html.content, 'html.parser')
             return html
@@ -88,6 +29,7 @@ def get_raw_html(url):
             sys.exit()
     except:
         print("URL ", url, " not recognized!")
+
 
 def get_title(url):
     url_list = url.split('/')
@@ -98,17 +40,16 @@ def get_title(url):
     title_list = title.split('-')
     title = ' '.join(title_list)
     resdict["title"] = title
-    return title.title()
-
+    return
 
 ##########################################################################################################
-# INGREDIENT STUFF
+# INGREDIENTS
 ##########################################################################################################
 
 def ingredients_from_url(url):
     html = get_raw_html(url)
-    #pdb.set_trace()
-    #soup = BeautifulSoup(html, "html.parser")
+    # pdb.set_trace()
+    # soup = BeautifulSoup(html, "html.parser")
     items = []
     for line in html.select('label'):
         line = str(line)
@@ -116,6 +57,7 @@ def ingredients_from_url(url):
             segments = line.split('"')
             items.append(segments[3])
     return items[:-1]
+
 
 def ingredient_parser(string):
     words = string.split(' ')
@@ -134,22 +76,23 @@ def ingredient_parser(string):
     measurement_units = [line.split('\n')[0] for line in open('measurement_units.txt', 'r').readlines()]
     if '(' in words[0]:
         measurement = ' '.join(words[:3])
-        measurement = measurement.replace("(","").replace(")","")
+        measurement = measurement.replace("(", "").replace(")", "")
         measurement = [measurement]
         words = words[3:]
     else:
         measurement = [word for word in words if word in measurement_units]
-        if len(measurement)==0 and ('to taste' in ' '.join(words) or 'for flavor' in ' '.join(words) or 'as needed' in ' '.join(words)):
+        if len(measurement) == 0 and ('to taste' in ' '.join(words) or 'for flavor' in ' '.join(words) or
+                                    'as needed' in ' '.join(words)):
             measurement=['to taste']
-            words = ' '.join(words).replace('to taste','').replace('for flavor','').replace('as needed','')
+            words = ' '.join(words).replace('to taste', '').replace('for flavor', '').replace('as needed', '')
             words = words.split(' ')
-        elif len(measurement)==0:
-            measurement=['unspecified']
+        elif len(measurement) == 0:
+            measurement = ['unspecified']
         words = [word for word in words if word not in measurement_units]
 
     descriptor_terms = [line.split('\n')[0] for line in open('descriptor_terms.txt', 'r').readlines()]
     descriptors = [word for word in words if word in descriptor_terms]
-    if len(descriptors)==0:
+    if len(descriptors) == 0:
         descriptors=['unspecified']
     words = [word for word in words if word not in descriptor_terms]
 
@@ -162,19 +105,20 @@ def ingredient_parser(string):
         ingredient1 = ingredient1 if isinstance(ingredient1, str) else ' '.join(ingredient1)
         ingredient2 = words[words.index('and')+1:]
         ingredient2 = ingredient2 if isinstance(ingredient2, str) else ' '.join(ingredient2)
-        name = [ingredient1.replace(',',''),ingredient2.replace(',','')]
+        name = [ingredient1.replace(',', ''), ingredient2.replace(',', '')]
     else:
-        name = [' '.join(words).replace(',','')]
+        name = [' '.join(words).replace(',', '')]
 
-    return {"name":name,
-            "quantity":quantity,
-            "measurement":measurement,
-            "descriptor":descriptors,
-            "preparation":preparation,
-            "prep_description":prep_description,
-            "max":Max,
-            "full_string":string
+    return {"name": name,
+            "quantity": quantity,
+            "measurement": measurement,
+            "descriptor": descriptors,
+            "preparation": preparation,
+            "prep_description": prep_description,
+            "max": Max,
+            "full_string": string
             }
+
 
 def get_ingredients(url):
     ingredient_list = ingredients_from_url(url)
@@ -182,24 +126,21 @@ def get_ingredients(url):
     for ingredient in ingredient_list:
         ingredient_data.append(ingredient_parser(ingredient))
     resdict["ingredients"] = ingredient_data
-    return ingredient_data
-
 
 ##########################################################################################################
-# TOOL & METHOD STUFF
+# TOOLS & METHODS
 ##########################################################################################################
 
 def get_tools(url):
     steps = grab_steps(url)
     cooking_tools = []
     implied_tools = []
-    official_tools = {}
     with open('tools.json') as f:
         official_tools = json.load(f)
 
     for s in steps:
         line = s.lower().strip()
-        line = re.sub(r'[^\w\s]','',line)
+        line = re.sub(r'[^\w\s]', '', line)
         for t in official_tools:
             if t in line:
                 cooking_tools.append(t)
@@ -212,16 +153,16 @@ def get_tools(url):
     resdict["implied cooking tools"] = list(set(implied_tools))
     return list(set(cooking_tools)), list(set(implied_tools))
 
+
 def get_methods(url):
     steps = grab_steps(url)
     cooking_methods = []
-    official_methods = {}
     with open('methods.json') as f:
         official_methods = json.load(f)
 
     for s in steps:
         line = s.lower().strip()
-        line = re.sub(r'[^\w\s]','',line)
+        line = re.sub(r'[^\w\s]', '', line)
         for m in official_methods:
             if m in line:
                 cooking_methods.append(m)
@@ -231,11 +172,11 @@ def get_methods(url):
                         cooking_methods.append(m)
 
     resdict["cooking methods"] = list(set(cooking_methods))
-    return list(set(cooking_methods))
 
 ##########################################################################################################
-# STEP STUFF
+# STEPS/INSTRUCTIONS
 ##########################################################################################################
+
 
 def grab_steps(url):
     html = get_raw_html(url)
@@ -244,19 +185,21 @@ def grab_steps(url):
         #         print(line)
         line = str(line)
         if "recipe-directions__list--item" in line:
-            #pdb.set_trace()
+            # pdb.set_trace()
             segments = line.split('>')
             steps.append(segments[1].split('\n')[0])
     return steps[:-1]
 
-def get_structuredsteps(url):
+
+def get_structured_steps(url):
     steps = grab_steps(url)
     joined = " ".join(steps)
     structured_steps = joined.split(".")
 
     resdict["structured steps"] = []
 
-    time_units = ['sec', 'sec.', 'seconds', 'second' 'min', 'min.', 'minutes', 'minute', 'hour', 'hours', 'hr', 'hrs', 'hr.', 'hrs.']
+    time_units = ['sec', 'sec.', 'seconds', 'second' 'min', 'min.', 'minutes', 'minute', 'hour', 'hours',
+                  'hr', 'hrs', 'hr.', 'hrs.']
 
     stop_words = list(stopwords.words('english'))
 
@@ -267,8 +210,6 @@ def get_structuredsteps(url):
     cooking_tools.extend([z for z in resdict["implied cooking tools"]])
     methods = {}
 
-
-    official_methods = {}
     with open('methods.json') as f:
         official_methods = json.load(f)
 
@@ -279,21 +220,19 @@ def get_structuredsteps(url):
         l_s = s.lower().strip()
 
         if l_s != "":
-            #pdb.set_trace()
             ingredient_list = []
             for i in ingredient_names:
                 for y in i.split():
                     if y not in stop_words and y in l_s:
                         if "broth" in i and "broth" not in l_s:
                             continue
-                        #elif
                         ingredient_list.append(i)
 
-            if len(ingredient_list)==0:
+            if len(ingredient_list) == 0:
                 ingredient_list = ['none']
 
             tools_list = [t for t in cooking_tools if t in l_s]
-            if len(tools_list)==0:
+            if len(tools_list) == 0:
                 tools_list = ['unspecified']
 
             methods_list = []
@@ -303,9 +242,9 @@ def get_structuredsteps(url):
                 elif methods[m]:
                     for im in methods[m]:
                         if im in l_s and im not in " ".join(tools_list):
-                            #print(im)
+                            # print(im)
                             methods_list.append(m)
-            if len(methods_list)==0:
+            if len(methods_list) == 0:
                 methods_list = ['unspecified']
 
             cooking_time = ""
@@ -313,11 +252,11 @@ def get_structuredsteps(url):
             for x in range(len(tokens) - 1):
                 if tokens[x].isdigit() and tokens[x + 1] in time_units:
                     cooking_time = [tokens[x] + ' ' + tokens[x + 1]]
-            if len(cooking_time)==0:
+            if len(cooking_time) == 0:
                 cooking_time = ['unspecified']
 
             step = {
-                "step": s,
+                "step": s.strip(),
                 "ingredients": list(set(ingredient_list)),
                 "tools": list(set(tools_list)),
                 "cooking time": cooking_time,
@@ -331,148 +270,255 @@ def get_structuredsteps(url):
 # TRANSFORMATIONS
 ##########################################################################################################
 
-def vegetarian(resdict, transform_type):
-    transformed_rec = copy.deepcopy(resdict)
-    official_veg_transform = {}
-    with open('vegetarian.json') as f:
-        official_veg_transform = json.load(f)
+def replace_ingredients(resdict_alt, ingredient_dict):
+    for item in ingredient_dict.keys():
+        resdict_alt['title'] = resdict_alt['title'].lower().replace(item,ingredient_dict[item]).title()
+        for ingredient in resdict_alt['ingredients']:
+            ingredient['full_string'] = ingredient['full_string'].lower().replace(item,ingredient_dict[item]).capitalize()
+            ingredient['name'] = [name.lower().replace(item,ingredient_dict[item]) for name in ingredient['name']]
+        for step in resdict_alt['structured steps']:
+            step['step'] = step['step'].lower().replace(item,ingredient_dict[item]).capitalize()
+            step['ingredients'] = [name.lower().replace(item,ingredient_dict[item]) for name in step['ingredients']]
+    return resdict_alt
 
-    substitutes = official_veg_transform["to veg"] if transform_type == "to veg" else official_veg_transform["from veg"]
 
-    new_title = transformed_rec['title']
-    for word in transformed_rec['title'].split():
-        lowered = word.lower()
-        if lowered in substitutes:
-            new_title = new_title.replace(word,substitutes[lowered][0].capitalize())
-    transformed_rec['title'] = new_title
+def replace_tools(resdict_alt,tool_dict):
+    for old_tool in tool_dict.keys():
+        resdict_alt['cooking tools'] = [tool.lower().replace(old_tool, tool_dict[old_tool])
+                                        for tool in resdict_alt['cooking tools']]
+        resdict_alt['implied cooking tools'] = [tool.lower().replace(old_tool, tool_dict[old_tool])
+                                                for tool in resdict_alt['implied cooking tools']]
+        for step in resdict_alt['structured steps']:
+            step['step'] = step['step'].lower().replace(old_tool, tool_dict[old_tool]).capitalize()
+            step['tools'] = [tool.lower().replace(old_tool, tool_dict[old_tool]) for tool in step['tools']]
+    return resdict_alt
 
-    new_ingredients = transformed_rec["ingredients"]
-    mapping = {}
 
-    for i in new_ingredients:
-        orig = i["name"][0].lower().strip()
-        orig = re.sub(r'[^\w\s]','',orig)
-        for w in orig.split():
-            if w in list(substitutes.keys()):
-                if "broth" in orig and w != "broth":
-                    continue
-                else:
-                    mapping[i["name"][0]] = substitutes[w][0]
-                    i["name"] = []
-                    i["name"].append(substitutes[w][0])
+def replace_methods(resdict_alt,method_dict):
+    for old_method in method_dict.keys():
+        resdict_alt['cooking methods'] = [method.lower().replace(old_method, method_dict[old_method])
+                                          for method in resdict_alt['cooking methods']]
+        for step in resdict_alt['structured steps']:
+            step['step'] = step['step'].lower().replace(old_method, method_dict[old_method]).capitalize()
+            step['methods'] = [method.lower().replace(old_method, method_dict[old_method])
+                               for method in step['methods']]
+    return resdict_alt
 
-        new_full_string = i['full_string']
-        for word in i["full_string"].split():
-            if word in substitutes:
-                new_full_string = new_full_string.replace(word,substitutes[word][0])
-        i["full_string"] = new_full_string
 
-    new_steps = transformed_rec["structured steps"]
-    for s in new_steps:
-        for m in mapping.keys():
-            if m in s["ingredients"]:
-                new_ingredient_list = [x if x != m else mapping[m] for x in s["ingredients"]]
-                s["ingredients"] = new_ingredient_list
+def universal_transformation(ingredient_dict={}, tool_dict={}, method_dict={}):
+    resdict_alt = copy.deepcopy(resdict)
+    if ingredient_dict != {}:
+        resdict_alt = replace_ingredients(resdict_alt, ingredient_dict)
+    if tool_dict != {}:
+        resdict_alt = replace_tools(resdict_alt, tool_dict)
+    if method_dict != {}:
+        resdict_alt = replace_methods(resdict_alt, method_dict)
+    return resdict_alt
 
-        new_step = s["step"]
-        for word in s["step"].split():
-            if word in substitutes:
-                new_step = new_step.replace(word,substitutes[word][0])
-        s["step"] = new_step
+def vegetarian_style():
+    with open('to_vegetarian.json') as f:
+        transformation_dict = json.load(f)
+    return universal_transformation(ingredient_dict=transformation_dict['ingredients'])
 
-    #pprint(resdict["structured steps"])
-    #pprint(new_steps)
-    return transformed_rec
+def meatlover_style():
+    with open('to_meatlover.json') as f:
+        transformation_dict = json.load(f)
+    return universal_transformation(ingredient_dict=transformation_dict['ingredients'])
+
+def southern_style():
+    with open('to_southern.json') as f:
+        transformation_dict = json.load(f)
+    return universal_transformation(ingredient_dict=transformation_dict['ingredients'],
+                                    tool_dict=transformation_dict['tools'],
+                                    method_dict=transformation_dict['methods'])
+
+# def vegetarian(transform_type):
+#     transformed_rec = copy.deepcopy(resdict)
+#     with open('vegetarian.json') as f:
+#         official_veg_transform = json.load(f)
+
+#     substitutes = official_veg_transform["to veg"] if transform_type == "to veg" else official_veg_transform["from veg"]
+
+#     new_title = transformed_rec['title']
+#     for word in transformed_rec['title'].split():
+#         lowered = word.lower()
+#         if lowered in substitutes:
+#             new_title = new_title.replace(word, substitutes[lowered][0].capitalize())
+#     transformed_rec['title'] = new_title
+
+#     new_ingredients = transformed_rec["ingredients"]
+#     mapping = {}
+
+#     for i in new_ingredients:
+#         orig = i["name"][0].lower().strip()
+#         orig = re.sub(r'[^\w\s]', '', orig)
+#         for w in orig.split():
+#             if w in list(substitutes.keys()):
+#                 if "broth" in orig and w != "broth":
+#                     continue
+#                 else:
+#                     mapping[i["name"][0]] = substitutes[w][0]
+#                     i["name"] = []
+#                     i["name"].append(substitutes[w][0])
+
+#         new_full_string = i['full_string']
+#         for word in i["full_string"].split():
+#             if word in substitutes:
+#                 new_full_string = new_full_string.replace(word, substitutes[word][0])
+#         i["full_string"] = new_full_string
+
+#     new_steps = transformed_rec["structured steps"]
+#     for s in new_steps:
+#         for m in mapping.keys():
+#             if m in s["ingredients"]:
+#                 new_ingredient_list = [x if x != m else mapping[m] for x in s["ingredients"]]
+#                 s["ingredients"] = new_ingredient_list
+
+#         new_step = s["step"]
+#         for word in s["step"].split():
+#             if word in substitutes:
+#                 new_step = new_step.replace(word, substitutes[word][0])
+#         s["step"] = new_step
+
+#     # pprint(resdict["structured steps"])
+#     # pprint(new_steps)
+#     return transformed_rec
+
+
+##########################################################################################################
+# VISUALS
+##########################################################################################################
+
+def print_ingredients(transformed_resdict={}):
+    if transformed_resdict != {}:
+        resdict = transformed_resdict
+    print('-------------------------------')
+    print('INGREDIENTS')
+    print('------------------------------- \n')
+
+    for ingredient_dict in resdict['ingredients']:
+        print('"'+ingredient_dict['full_string']+'"')
+        print('Ingredient: ', ', '.join(ingredient_dict['name']))
+        print('Quantity: ', ', '.join(ingredient_dict['quantity']))
+        print('Measurement: ', ', '.join(ingredient_dict['measurement']))
+        print('Descriptor: ', ', '.join(ingredient_dict['descriptor']))
+        print('')
+
+
+def print_tools(transformed_resdict={}):
+    if transformed_resdict != {}:
+        resdict = transformed_resdict
+    print('-------------------------------')
+    print('TOOLS')
+    print('------------------------------- \n')
+
+    print('Named: '+', '.join(resdict['cooking tools']))
+    print('Implied: '+', '.join(resdict['implied cooking tools']))
+    print('')
+
+
+def print_methods(transformed_resdict={}):
+    if transformed_resdict != {}:
+        resdict = transformed_resdict
+    print('-------------------------------')
+    print('METHODS')
+    print('------------------------------- \n')
+    print(', '.join(resdict['cooking methods']))
+    print('')
+
+
+def print_steps(transformed_resdict={}):
+    if transformed_resdict!={}:
+        resdict = transformed_resdict
+    print('-------------------------------')
+    print('INSTRUCTIONS')
+    print('------------------------------- \n')
+    for i in range(len(resdict['structured steps'])):
+        print('Step ',str(i+1),': ')
+        step_dict = resdict['structured steps'][i]
+        print('"'+step_dict['step']+'"')
+        print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
+        print('Relevant Tools: '+', '.join(step_dict['tools']))
+        print('Relevant Methods: '+', '.join(step_dict['methods']))
+        print('Cooking Time: '+', '.join(step_dict['cooking time']))
+        print('')
+
+
+def summary(transformed_resdict={}):
+    """Used for pretty printing transformed recipes"""
+    if transformed_resdict!={}:
+        resdict = transformed_resdict
+
+    print(resdict['title'] + ' Recipe: \n')
+    print_ingredients(resdict)
+    print_tools(resdict)
+    print_methods(resdict)
+    print_steps(resdict)
 
 ##########################################################################################################
 # MAIN
 ##########################################################################################################
 
+def autograder(url):
+    """Accepts the URL for a recipe, and returns a dictionary of the
+    parsed results in the correct format. See project sheet for
+    details on correct format."""
+    # your code here
+    print('loading... \n')
+    get_ingredients(url)
+    get_tools(url)
+    get_methods(url)
+    get_structured_steps(url)
+
+    return resdict
+
 def main():
     # url = "http://allrecipes.com/Recipe/Baked-Lemon-Chicken-with-Mushroom-Sauce/"
-    #
-    # #url = str(input("What recipe would you like to read?: \n")).strip()
-    # #autograder(url)
-    # get_title(url)
-    # get_ingredients(url)
-    # get_tools(url)
-    # get_methods(url)
-    # get_structuredsteps(url)
-    #
-    # #pprint(vegetarian(resdict, "from veg"))
-    # pretty_output(vegetarian(resdict, "to veg"))
+    # url = "http://allrecipes.com/recipe/easy-meatloaf/"
+    # url = 'https://thewoksoflife.com/2018/08/peach-daiquiris-frozen/'
 
-    #user loop
+    # user loop
     outer_loop = 1
     while outer_loop == 1:
         url = str(input("What recipe would you like to read?: ")).strip()
         inner_loop = 1
 
         print('loading... \n')
+        get_title(url)
         get_ingredients(url)
         get_tools(url)
         get_methods(url)
-        get_structuredsteps(url)
-        print(get_title(url)+' Recipe: \n')
+        get_structured_steps(url)
+        print(resdict['title']+' Recipe: \n')
 
         while inner_loop == 1:
             print("What do you want to do?")
             print ("\n1. Ingredients \n2. Cooking Tools\n3. Cooking Methods\n4. Steps\n5. Transform")
             user_input = str(input("Choose an option: ")).strip()
             print("")
+
             if user_input == "1":
-
-                print('-------------------------------')
-                print('INGREDIENTS')
-                print('------------------------------- \n')
-
-                for ingredient_dict in resdict['ingredients']:
-                    print(ingredient_dict['full_string'])
-                    print('Ingredient: ',', '.join(ingredient_dict['name']))
-                    print('Quantity: ',', '.join(ingredient_dict['quantity']))
-                    print('Measurement: ',', '.join(ingredient_dict['measurement']))
-                    print('Descriptor: ',', '.join(ingredient_dict['descriptor']))
-                    print('')
+                print_ingredients()
 
             elif user_input == "2":
-                print('-------------------------------')
-                print('TOOLS')
-                print('------------------------------- \n')
+                print_tools()
 
-                print('Named: '+', '.join(resdict['cooking tools']))
-                print('Implied: '+', '.join(resdict['implied cooking tools']))
-                print('')
             elif user_input == "3":
-
-                print('-------------------------------')
-                print('METHODS')
-                print('------------------------------- \n')
-                print(', '.join(resdict['cooking methods']))
-                print('')
+                print_methods()
 
             elif user_input == "4":
-
-                print('-------------------------------')
-                print('INSTRUCTIONS')
-                print('------------------------------- \n')
-                for i in range(len(resdict['structured steps'])):
-                    print('Step ',str(i+1),': ')
-                    step_dict = resdict['structured steps'][i]
-                    print(step_dict['step'])
-                    print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
-                    print('Relevant Tools: '+', '.join(step_dict['tools']))
-                    print('Relevant Methods: '+', '.join(step_dict['methods']))
-                    print('Cooking Time: '+', '.join(step_dict['cooking time']))
-                    print('')
+                print_steps()
 
             elif user_input == "5":
                 print("How do you want to transform the recipe?")
-                print("\n1. To vegeratian \n2. From vegetarian")
+                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern")
                 transform_type = str(input("Choose an option: ")).strip()
                 if transform_type == "1":
-                    pretty_output(vegetarian(resdict, "to veg"))
+                    summary(vegetarian_style())
                 elif transform_type == "2":
-                    pretty_output(vegetarian(resdict, "from veg"))
+                    summary(meatlover_style())
+                elif transform_type == "3":
+                    summary(southern_style())
                 else:
                     print("Invalid transformation type.")
             else:
@@ -492,6 +538,7 @@ def main():
             break
         else:
             continue
+
 
 if __name__ == '__main__':
     main()
