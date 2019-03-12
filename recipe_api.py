@@ -335,9 +335,8 @@ def southern_style():
                                              tool_dict=transformation_dict['tools'],
                                              method_dict=transformation_dict['methods'])
     for ingredient in southern_dict['ingredients']:
-        if ingredient['quantity'][0].isnumeric():
-            pdb.set_trace()
-            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0])) + ingredient['quantity'][1:]
+        if ingredient['quantity'][0][0].isnumeric():
+            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
     return southern_dict
 
 

@@ -10,7 +10,12 @@
 	"oven":"deep fryer",
 	"pan":"deep fryer"},
 "methods":
-	{"steam":"fry",
-	"grill":"fry",
+	{"steamed":"fried",
+	"steam":"fry",
+	"seared":"fried",
+	"sear":"fry",
+	"stewed":"fried",
+	"stew":"fry",
+	"baked":"fried",
 	"bake":"fry"}
 }
