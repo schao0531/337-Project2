@@ -82,7 +82,7 @@ def ingredient_parser(string):
     else:
         measurement = [word for word in words if word in measurement_units]
         if len(measurement) == 0 and ('to taste' in ' '.join(words) or 'for flavor' in ' '.join(words) or
-                                    'as needed' in ' '.join(words)):
+                                      'as needed' in ' '.join(words)):
             measurement=['to taste']
             words = ' '.join(words).replace('to taste', '').replace('for flavor', '').replace('as needed', '')
             words = words.split(' ')
@@ -282,7 +282,7 @@ def replace_ingredients(resdict_alt, ingredient_dict):
     return resdict_alt
 
 
-def replace_tools(resdict_alt,tool_dict):
+def replace_tools(resdict_alt, tool_dict):
     for old_tool in tool_dict.keys():
         resdict_alt['cooking tools'] = [tool.lower().replace(old_tool, tool_dict[old_tool])
                                         for tool in resdict_alt['cooking tools']]
@@ -294,7 +294,7 @@ def replace_tools(resdict_alt,tool_dict):
     return resdict_alt
 
 
-def replace_methods(resdict_alt,method_dict):
+def replace_methods(resdict_alt, method_dict):
     for old_method in method_dict.keys():
         resdict_alt['cooking methods'] = [method.lower().replace(old_method, method_dict[old_method])
                                           for method in resdict_alt['cooking methods']]
@@ -315,22 +315,30 @@ def universal_transformation(ingredient_dict={}, tool_dict={}, method_dict={}):
         resdict_alt = replace_methods(resdict_alt, method_dict)
     return resdict_alt
 
+
 def vegetarian_style():
     with open('to_vegetarian.json') as f:
         transformation_dict = json.load(f)
     return universal_transformation(ingredient_dict=transformation_dict['ingredients'])
+
 
 def meatlover_style():
     with open('to_meatlover.json') as f:
         transformation_dict = json.load(f)
     return universal_transformation(ingredient_dict=transformation_dict['ingredients'])
 
+
 def southern_style():
     with open('to_southern.json') as f:
         transformation_dict = json.load(f)
-    return universal_transformation(ingredient_dict=transformation_dict['ingredients'],
-                                    tool_dict=transformation_dict['tools'],
-                                    method_dict=transformation_dict['methods'])
+    southern_dict = universal_transformation(ingredient_dict=transformation_dict['ingredients'],
+                                             tool_dict=transformation_dict['tools'],
+                                             method_dict=transformation_dict['methods'])
+    for ingredient in southern_dict['ingredients']:
+        if ingredient['quantity'][0].isnumeric():
+            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0])) + ingredient['quantity'][1:]
+    return southern_dict
+
 
 # def vegetarian(transform_type):
 #     transformed_rec = copy.deepcopy(resdict)
@@ -386,7 +394,7 @@ def southern_style():
 
 
 ##########################################################################################################
-# VISUALS
+# PRINT FUNCTIONS
 ##########################################################################################################
 
 def print_ingredients(transformed_resdict={}):
