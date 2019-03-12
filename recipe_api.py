@@ -336,6 +336,7 @@ def southern_style():
                                              method_dict=transformation_dict['methods'])
     for ingredient in southern_dict['ingredients']:
         if ingredient['quantity'][0].isnumeric():
+            pdb.set_trace()
             ingredient['quantity'] = str(2 * int(ingredient['quantity'][0])) + ingredient['quantity'][1:]
     return southern_dict
 
@@ -397,15 +398,12 @@ def southern_style():
 # PRINT FUNCTIONS
 ##########################################################################################################
 
-def print_ingredients(transformed_resdict={}):
-    global resdict
-    if transformed_resdict != {}:
-        resdict = transformed_resdict
+def print_ingredients(res_dict):
     print('-------------------------------')
     print('INGREDIENTS')
     print('------------------------------- \n')
 
-    for ingredient_dict in resdict['ingredients']:
+    for ingredient_dict in res_dict['ingredients']:
         print('"'+ingredient_dict['full_string']+'"')
         print('Ingredient: ', ', '.join(ingredient_dict['name']))
         print('Quantity: ', ', '.join(ingredient_dict['quantity']))
@@ -414,40 +412,31 @@ def print_ingredients(transformed_resdict={}):
         print('')
 
 
-def print_tools(transformed_resdict={}):
-    global resdict
-    if transformed_resdict != {}:
-        resdict = transformed_resdict
+def print_tools(res_dict):
     print('-------------------------------')
     print('TOOLS')
     print('------------------------------- \n')
 
-    print('Named: '+', '.join(resdict['cooking tools']))
-    print('Implied: '+', '.join(resdict['implied cooking tools']))
+    print('Named: '+', '.join(res_dict['cooking tools']))
+    print('Implied: '+', '.join(res_dict['implied cooking tools']))
     print('')
 
 
-def print_methods(transformed_resdict={}):
-    global resdict
-    if transformed_resdict != {}:
-        resdict = transformed_resdict
+def print_methods(res_dict):
     print('-------------------------------')
     print('METHODS')
     print('------------------------------- \n')
-    print(', '.join(resdict['cooking methods']))
+    print(', '.join(res_dict['cooking methods']))
     print('')
 
 
-def print_steps(transformed_resdict={}):
-    global resdict
-    if transformed_resdict!={}:
-        resdict = transformed_resdict
+def print_steps(res_dict):
     print('-------------------------------')
     print('INSTRUCTIONS')
     print('------------------------------- \n')
-    for i in range(len(resdict['structured steps'])):
+    for i in range(len(res_dict['structured steps'])):
         print('Step ',str(i+1),': ')
-        step_dict = resdict['structured steps'][i]
+        step_dict = res_dict['structured steps'][i]
         print('"'+step_dict['step']+'"')
         print('Relevant Ingredients: '+', '.join(step_dict['ingredients']))
         print('Relevant Tools: '+', '.join(step_dict['tools']))
@@ -456,39 +445,21 @@ def print_steps(transformed_resdict={}):
         print('')
 
 
-def summary(transformed_resdict={}):
+def summary(transformed_resdict):
     """Used for pretty printing transformed recipes"""
-    global resdict
-    if transformed_resdict!={}:
-        resdict = transformed_resdict
-
-    print(resdict['title'] + ' Recipe: \n')
-    print_ingredients(resdict)
-    print_tools(resdict)
-    print_methods(resdict)
-    print_steps(resdict)
+    print(transformed_resdict['title'] + ' Recipe: \n')
+    print_ingredients(transformed_resdict)
+    print_tools(transformed_resdict)
+    print_methods(transformed_resdict)
+    print_steps(transformed_resdict)
 
 ##########################################################################################################
 # MAIN
 ##########################################################################################################
 
-def autograder(url):
-    """Accepts the URL for a recipe, and returns a dictionary of the
-    parsed results in the correct format. See project sheet for
-    details on correct format."""
-    # your code here
-    print('loading... \n')
-    get_ingredients(url)
-    get_tools(url)
-    get_methods(url)
-    get_structured_steps(url)
-
-    return resdict
-
 def main():
     # url = "http://allrecipes.com/Recipe/Baked-Lemon-Chicken-with-Mushroom-Sauce/"
     # url = "http://allrecipes.com/recipe/easy-meatloaf/"
-    # url = 'https://thewoksoflife.com/2018/08/peach-daiquiris-frozen/'
 
     # user loop
     outer_loop = 1
@@ -512,16 +483,16 @@ def main():
             print("")
 
             if user_input == "1":
-                print_ingredients()
+                print_ingredients(resdict)
 
             elif user_input == "2":
-                print_tools()
+                print_tools(resdict)
 
             elif user_input == "3":
-                print_methods()
+                print_methods(resdict)
 
             elif user_input == "4":
-                print_steps()
+                print_steps(resdict)
 
             elif user_input == "5":
                 print("How do you want to transform the recipe?")
