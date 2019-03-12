@@ -304,6 +304,15 @@ def replace_methods(resdict_alt, method_dict):
                                for method in step['methods']]
     return resdict_alt
 
+def is_in_style(dict_to_check, style_dict):
+    for stop_ingredient in style_dict['stopwords']:
+        for ingredient in dict_to_check['ingredients']:
+            for ing_name in ingredient['name']:
+                if stop_ingredient in ing_name:
+                    # print('stop found')
+                    return True
+    return False
+
 
 def universal_transformation(ingredient_dict={}, tool_dict={}, method_dict={}):
     resdict_alt = copy.deepcopy(resdict)
@@ -342,13 +351,17 @@ def southern_style():
 def korean_style():
     with open('to_korean.json') as f:
         transformation_dict = json.load(f)
+
     korean_dict = universal_transformation(ingredient_dict=transformation_dict['ingredients'],
                                              tool_dict=transformation_dict['tools'],
                                              method_dict=transformation_dict['methods'])
+    korean_dict['stopwords'] = transformation_dict['stopwords']
+    # print('stopwordsdict : ', korean_dict['stopwords'])
     for ingredient in korean_dict['ingredients']:
         if ingredient['quantity'][0][0].isnumeric():
             ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
     return korean_dict
+
 
 
 # def vegetarian(transform_type):
@@ -470,6 +483,7 @@ def summary(transformed_resdict):
 def main():
     # url = "http://allrecipes.com/Recipe/Baked-Lemon-Chicken-with-Mushroom-Sauce/"
     # url = "http://allrecipes.com/recipe/easy-meatloaf/"
+    # korean_recipe_url = "https://www.allrecipes.com/recipe/237053/kimchi-fried-rice-kimchi-bokkeumbap/?internalSource=hub%20recipe&referringContentType=Search&clickId=cardslot%201"
 
     # user loop
     outer_loop = 1
@@ -515,7 +529,11 @@ def main():
                 elif transform_type == "3":
                     summary(southern_style())
                 elif transform_type == "4":
-                    summary(korean_style())
+                    kor_dict=korean_style()
+                    if is_in_style(resdict, kor_dict):
+                        print('The recipe is already a cuisine in that style!')
+                    else:
+                        summary(kor_dict)
                 else:
                     print("Invalid transformation type.")
             else:

@@ -27,5 +27,23 @@
 "methods":
 	{
 	"baked":"fried",
-	"bake":"fry"}
+	"bake":"fry"},
+"stopwords":
+	 [
+	"korean",
+	"kimchi",
+	"gochu",
+	"doenjang",
+	"ssamjang",
+	"galbi",
+	"kalbi",
+	"bulgogi",
+	"bibimbap",
+	"bokkeum",
+	"japchae",
+	"samgyeopsal",
+	"mandu"
+	]
+
+	
 }
