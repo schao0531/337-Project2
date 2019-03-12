@@ -339,6 +339,17 @@ def southern_style():
             ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
     return southern_dict
 
+def korean_style():
+    with open('to_korean.json') as f:
+        transformation_dict = json.load(f)
+    korean_dict = universal_transformation(ingredient_dict=transformation_dict['ingredients'],
+                                             tool_dict=transformation_dict['tools'],
+                                             method_dict=transformation_dict['methods'])
+    for ingredient in korean_dict['ingredients']:
+        if ingredient['quantity'][0][0].isnumeric():
+            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
+    return korean_dict
+
 
 # def vegetarian(transform_type):
 #     transformed_rec = copy.deepcopy(resdict)
@@ -495,7 +506,7 @@ def main():
 
             elif user_input == "5":
                 print("How do you want to transform the recipe?")
-                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern")
+                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern \n4. To Korean")
                 transform_type = str(input("Choose an option: ")).strip()
                 if transform_type == "1":
                     summary(vegetarian_style())
@@ -503,6 +514,8 @@ def main():
                     summary(meatlover_style())
                 elif transform_type == "3":
                     summary(southern_style())
+                elif transform_type == "4":
+                    summary(korean_style())
                 else:
                     print("Invalid transformation type.")
             else:

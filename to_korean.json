@@ -1,0 +1,31 @@
+{"ingredients":
+	{
+	"brown rice" : "sticky rice",
+	"jasmine rice" : "sticky rice",
+	"basmati rice" : "sticky rice",
+	"cargo rice" : "sticky rice",
+	"parboiled rice" : "sticky rice",
+	"jalapeno" : "Cheongyang chili pepper",
+	"wasabi" : "red chili paste",
+	"tabasco" : "red chili paste",
+	"hot sauce": "red chili paste",
+	"pasta":"japchae noodles",
+	"spaghetti":"japchae noodle",
+	"linguine":"japchae noodle",
+	"capellini":"japchae noodles",
+	"fettuccine":"japchae noodles",
+	"salsa" : "soy bean paste",
+	"butter" : "sesame seed oil",
+	"parsley" : "green onion"
+	},
+"tools":
+	{
+	"pot" : "stone bowl",
+	"oven" : "bamboo steamer",
+	"grill" : "charcoal grill"
+	},
+"methods":
+	{
+	"baked":"fried",
+	"bake":"fry"}
+}
