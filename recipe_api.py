@@ -398,6 +398,7 @@ def southern_style():
 ##########################################################################################################
 
 def print_ingredients(transformed_resdict={}):
+    global resdict
     if transformed_resdict != {}:
         resdict = transformed_resdict
     print('-------------------------------')
@@ -414,6 +415,7 @@ def print_ingredients(transformed_resdict={}):
 
 
 def print_tools(transformed_resdict={}):
+    global resdict
     if transformed_resdict != {}:
         resdict = transformed_resdict
     print('-------------------------------')
@@ -426,6 +428,7 @@ def print_tools(transformed_resdict={}):
 
 
 def print_methods(transformed_resdict={}):
+    global resdict
     if transformed_resdict != {}:
         resdict = transformed_resdict
     print('-------------------------------')
@@ -436,6 +439,7 @@ def print_methods(transformed_resdict={}):
 
 
 def print_steps(transformed_resdict={}):
+    global resdict
     if transformed_resdict!={}:
         resdict = transformed_resdict
     print('-------------------------------')
@@ -454,6 +458,7 @@ def print_steps(transformed_resdict={}):
 
 def summary(transformed_resdict={}):
     """Used for pretty printing transformed recipes"""
+    global resdict
     if transformed_resdict!={}:
         resdict = transformed_resdict
 
@@ -498,6 +503,7 @@ def main():
         get_methods(url)
         get_structured_steps(url)
         print(resdict['title']+' Recipe: \n')
+        #print(resdict)
 
         while inner_loop == 1:
             print("What do you want to do?")
