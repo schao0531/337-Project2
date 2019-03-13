@@ -336,6 +336,13 @@ def meatlover_style():
         transformation_dict = json.load(f)
     return universal_transformation(ingredient_dict=transformation_dict['ingredients'])
 
+def healthy_style():
+    with open('to_healthy.json') as f:
+        transformation_dict = json.load(f)
+    healthy_dict = universal_transformation(ingredient_dict = transformation_dict['ingredients'],
+                                              method_dict=transformation_dict['methods'])
+    return healthy_dict
+
 
 def southern_style():
     with open('to_southern.json') as f:
@@ -520,7 +527,7 @@ def main():
 
             elif user_input == "5":
                 print("How do you want to transform the recipe?")
-                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern \n4. To Korean")
+                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern \n4. To Korean \n5. To Healthy")
                 transform_type = str(input("Choose an option: ")).strip()
                 if transform_type == "1":
                     summary(vegetarian_style())
@@ -534,6 +541,8 @@ def main():
                         print('The recipe is already a cuisine in that style!')
                     else:
                         summary(kor_dict)
+                elif transform_type == "5":
+                    summary(healthy_style())
                 else:
                     print("Invalid transformation type.")
             else:
