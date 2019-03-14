@@ -270,6 +270,7 @@ def get_structured_steps(url):
 # TRANSFORMATIONS
 ##########################################################################################################
 
+
 def replace_ingredients(resdict_alt, ingredient_dict):
     for item in ingredient_dict.keys():
         resdict_alt['title'] = resdict_alt['title'].lower().replace(item,ingredient_dict[item]).title()
@@ -316,6 +317,7 @@ def is_in_style(dict_to_check, style_dict):
 
 def universal_transformation(ingredient_dict={}, tool_dict={}, method_dict={}):
     resdict_alt = copy.deepcopy(resdict)
+    
     if ingredient_dict != {}:
         resdict_alt = replace_ingredients(resdict_alt, ingredient_dict)
     if tool_dict != {}:
@@ -342,6 +344,13 @@ def healthy_style():
     healthy_dict = universal_transformation(ingredient_dict = transformation_dict['ingredients'],
                                               method_dict=transformation_dict['methods'])
     return healthy_dict
+
+def unhealthy_style():
+    with open('to_unhealthy.json') as f:
+        transformation_dict = json.load(f)
+    unhealthy_dict = universal_transformation(ingredient_dict = transformation_dict['ingredients'],
+                                              method_dict=transformation_dict['methods'])
+    return unhealthy_dict
 
 
 def southern_style():
@@ -527,7 +536,7 @@ def main():
 
             elif user_input == "5":
                 print("How do you want to transform the recipe?")
-                print("\n1. To vegeratian \n2. To meat-lover \n3. To southern \n4. To Korean \n5. To Healthy")
+                print("\n1. To vegeratian \n2. To meat-lover \n3. To Southern \n4. To Korean \n5. To healthy \n6. To unhealthy")
                 transform_type = str(input("Choose an option: ")).strip()
                 if transform_type == "1":
                     summary(vegetarian_style())
@@ -543,6 +552,8 @@ def main():
                         summary(kor_dict)
                 elif transform_type == "5":
                     summary(healthy_style())
+                elif transform_type == "6":
+                    summary(unhealthy_style())
                 else:
                     print("Invalid transformation type.")
             else:

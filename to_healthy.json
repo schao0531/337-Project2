@@ -1,6 +1,6 @@
 {"ingredients":
 	{
-		"floud": "coconut flour",
+		"flour": "coconut flour",
 		"wheat flour": "coconut flour",
 		"pasta": "spaghetti squash",
 		"spaghetti": "spaghetti squash",
@@ -16,7 +16,7 @@
 		"table salt": "himalayan salt",
 		"breadcrumbs": "chia seeds",
 		"chocolate chips": "cocoa nibs",
-		"iceberg lettuc": "kale",
+		"iceberg lettuce": "kale",
 		"romaine": "kale",
 		"ranch dressing": "olive oil and vinegar dressing",
 		"peanut butter": "unprocessed almond butter",
@@ -37,7 +37,3 @@
 
 
 }
-
-
-
-

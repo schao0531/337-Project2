@@ -1,0 +1,40 @@
+{"ingredients":
+	{
+		"coconut flour": "flour",
+		"spaghetti squash": "pasta",
+		"fat-free milk": "milk",
+		"quinoa": "white rice",
+		"coconut oil": "butter oil",
+    "vegetable oil":"butter",
+		"low fat greek yogurt": "mayonnaise",
+    "yogurt":"sour cream",
+		"stevia": "sugar",
+		"himalayan salt": "table salt",
+		"chia seeds": "breadcrumbs",
+    "cocoa nibs": "chocolate chips",
+		"kale": "romaine lettuce",
+		"olive oil and vinegar dressing": "ranch dressing",
+		"almond butter": "butter",
+		"almond milk": "whole milk",
+    "low fat milk":"whole milk",
+		"sweet potatoes": "potatoes",
+		"sweet potato": "potato",
+		"cottage cheese": "cheese",
+		"skim milk": "heavy cream",
+		"tofu": "beef",
+		"turkey bacon": "bacon",
+    "eggplant":"bacon"
+	},
+"methods":
+	{
+    "bake":"fry",
+    "baked":"fried",
+    "baking":"frying",
+    "pan fry":"deep-fry",
+    "pan fried":"deep-fried",
+    "pan frying":"deep-frying"
+
+	}
+
+
+}
