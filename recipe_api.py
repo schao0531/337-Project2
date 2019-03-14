@@ -317,7 +317,7 @@ def is_in_style(dict_to_check, style_dict):
 
 def universal_transformation(ingredient_dict={}, tool_dict={}, method_dict={}):
     resdict_alt = copy.deepcopy(resdict)
-    
+
     if ingredient_dict != {}:
         resdict_alt = replace_ingredients(resdict_alt, ingredient_dict)
     if tool_dict != {}:
@@ -342,14 +342,22 @@ def healthy_style():
     with open('to_healthy.json') as f:
         transformation_dict = json.load(f)
     healthy_dict = universal_transformation(ingredient_dict = transformation_dict['ingredients'],
+                                            tool_dict=transformation_dict['tools'],
                                               method_dict=transformation_dict['methods'])
+    for ingredient in healthy_dict['ingredients']:
+        if ingredient['quantity'][0][0].isnumeric():
+            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
     return healthy_dict
 
 def unhealthy_style():
     with open('to_unhealthy.json') as f:
         transformation_dict = json.load(f)
     unhealthy_dict = universal_transformation(ingredient_dict = transformation_dict['ingredients'],
+                                            tool_dict=transformation_dict['tools'],
                                               method_dict=transformation_dict['methods'])
+    for ingredient in unhealthy_dict['ingredients']:
+        if ingredient['quantity'][0][0].isnumeric():
+            ingredient['quantity'] = str(2 * int(ingredient['quantity'][0][0])) + ingredient['quantity'][0][1:]
     return unhealthy_dict
 
 
