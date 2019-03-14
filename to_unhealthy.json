@@ -25,6 +25,12 @@
 		"turkey bacon": "bacon",
     "eggplant":"bacon"
 	},
+
+	"tools":
+		{"grill":"fryer",
+		"oven":"fryer",
+		"pan":"fryer"},
+
 "methods":
 	{
     "bake":"fry",

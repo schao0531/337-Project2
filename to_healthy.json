@@ -30,9 +30,19 @@
 		"cream cheese": "light chream cheese",
 		"bacon": "turkey bacon"
 	},
+
+	"tools":
+		{"fryer":"oven"},
+
 "methods":
 	{
-		"deep fry": "pan fry"
+		"deep fry": "pan fry",
+		"deep fried":"pan fried",
+		"deep frying":"pan frying",
+		"fry":"bake",
+		"fried":"baked",
+		"frying":"baking"
+
 	}
 
 
